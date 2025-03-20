@@ -135,3 +135,77 @@ fetch("https://questionnaire-jeunesse-server.vercel.app/questions")
   .catch((error) =>
     console.error("Error fetching data for Pie Charts:", error)
   );
+
+// Fonction pour récupérer et afficher les graphiques supplémentaires
+fetch("https://questionnaire-server.vercel.app/utilisateurs")
+  .then((response) => response.json())
+  .then((users) => {
+    afficherGraphique(users, "genre", "Genre");
+    afficherGraphique(users, "age", "Âge");
+    afficherGraphique(users, "annee", "Année");
+    afficherGraphique(users, "ecole", "École");
+  })
+  .catch((error) => console.error("Erreur récupération utilisateurs:", error));
+
+// Fonction générique pour créer les graphiques
+function afficherGraphique(data, propriete, titre) {
+  // Regrouper les données par propriété
+  const groupes = {};
+  data.forEach((utilisateur) => {
+    const valeur = utilisateur[propriete];
+    groupes[valeur] = (groupes[valeur] || 0) + 1;
+  });
+
+  const labels = Object.keys(groupes);
+  const valeurs = Object.values(groupes);
+
+  const canvasId = `chart-${propriete}`;
+
+  const container = document.createElement("div");
+  container.classList.add("chart-container");
+  container.innerHTML = `
+  <h2>Répartition par ${titre}</h2>
+  <canvas id="${canvasId}" class="canvas"></canvas>
+`;
+  document.body.appendChild(container);
+
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  new Chart(ctx, {
+    type: "pie",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: titre,
+          data: valeurs,
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.6)",
+            "rgba(54, 162, 235, 0.6)",
+            "rgba(255, 206, 86, 0.6)",
+            "rgba(75, 192, 192, 0.6)",
+            "rgba(153, 102, 255, 0.6)",
+            "rgba(255, 159, 64, 0.6)",
+            "rgba(199, 199, 199, 0.6)",
+          ],
+          borderColor: [
+            "rgba(255, 99, 132, 1)",
+            "rgba(54, 162, 235, 1)",
+            "rgba(255, 206, 86, 1)",
+            "rgba(75, 192, 192, 1)",
+            "rgba(153, 102, 255, 1)",
+            "rgba(255, 159, 64, 1)",
+            "rgba(159, 159, 159, 1)",
+          ],
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" },
+        tooltip: { enabled: true },
+      },
+    },
+  });
+}
